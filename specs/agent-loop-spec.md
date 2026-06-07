@@ -122,7 +122,11 @@ for tool_call in assistant_message.tool_calls:
 *The loop should stop when: (a) the LLM returns a response with no tool calls, OR (b) the MAX_TOOL_ROUNDS limit is reached. Describe how you will detect each condition and what you will return in each case.*
 
 ```
-[your answer here]
+The loop is capped via for _ in range(MAX_TOOL_ROUNDS), where MAX_TOOL_ROUNDS comes from config.py.
+ (a) No tool calls: each round, I pull assistant_message = response.choices[0].message and check whether assistant_message.tool_calls is present. If it's empty or None, the model has a final answer, so I return assistant_message. content, ORed with the fallback "Sorry, I was not able to generate a response." so the function never returns. 
+ (b) Limit reached: if every round still requests tools, the for loop runs out and exits on its own. I then make one more create() call with no tools parameter, which forces a plain-text reply since the model can't ask for tools. I return that message's .content, falling back to "The limit for tool calling was reached. Please try rephrasing your question." when it's empty. Both paths terminate, and both return a non-empty string.
+
+
 ```
 
 ---
@@ -132,7 +136,9 @@ for tool_call in assistant_message.tool_calls:
 *Once the loop exits because there are no more tool calls, how do you extract the text content from the response object? What field holds the string you should return?*
 
 ```
-[your answer here]
+The string sits in response. choices[0].message.content. Inside the loop, I store assistant_message = response.choices[0].message and read assistant_message.content; for the post-loop case, I read final_response.choices[0].message.content. Because content can be None or "" on a turn that was only tool calls, I OR it with a fallback string to hold up the "never empty" contract.
+
+
 ```
 
 ---
@@ -159,5 +165,5 @@ Final response: [brief description]
 **One thing about the tool call API that surprised you:**
 
 ```
-[your answer here]
+
 ```
