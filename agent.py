@@ -1,5 +1,5 @@
 import json
-from groq import Groq
+from groq import Groq, BadRequestError
 from config import GROQ_API_KEY, LLM_MODEL, MAX_TOOL_ROUNDS
 from tools import lookup_plant, get_seasonal_conditions
 
@@ -121,6 +121,30 @@ def run_agent(user_message: str, history: list) -> str:
         )
 
         assistant_message = response.choices[0].message
+
+        if not assistant_message.tool_calls:
+            return assistant_message.content or "Sorry, I was not able to generate a response."
+        
+        messages.append(assistant_message)
+
+        for tool_call in assistant_message.tool_calls:
+            tool_name = tool_call.function.name
+            tool_args = json.loads(tool_call.functions.arguments)
+            tool_result = dispatch_tool(tool_name, tool_args)
+
+
+            messages.append({
+                "role": tool,
+                "tool_call_id": tool_call_id,
+                "content": tool_result,
+            })
+    print(f"  ⚠ MAX_TOOL_ROUNDS ({MAX_TOOL_ROUNDS}) reached, pushing final response")
+    final_response = _client.chat.completions.create(
+        model=LLM_MODEL,
+        messages=messages,
+    )
+
+
 
 
 
