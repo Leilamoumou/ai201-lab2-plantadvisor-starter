@@ -109,7 +109,7 @@ def run_agent(user_message: str, history: list) -> str:
         if assistant_msg:
             messages.append({"role": "assistant", "content": assistant_msg})
     
-    messages.append({[{"role": "system", "content": user_message}]})
+    messages.append({"role": "user", "content": user_message})
 
     #agent loop
     for _ in range(MAX_TOOL_ROUNDS):
@@ -129,15 +129,15 @@ def run_agent(user_message: str, history: list) -> str:
 
         for tool_call in assistant_message.tool_calls:
             tool_name = tool_call.function.name
-            tool_args = json.loads(tool_call.functions.arguments)
+            tool_args = json.loads(tool_call.function.arguments)
             tool_result = dispatch_tool(tool_name, tool_args)
 
 
             messages.append({
-                "role": tool,
-                "tool_call_id": tool_call_id,
-                "content": tool_result,
-            })
+        "role": "tool",
+        "tool_call_id": tool_call.id,
+    "content": tool_result,
+})
     print(f"  ⚠ MAX_TOOL_ROUNDS ({MAX_TOOL_ROUNDS}) reached, pushing final response")
     final_response = _client.chat.completions.create(
         model=LLM_MODEL,
