@@ -70,7 +70,7 @@ likely match for clean user input. Aliases are the broadest net, so they go last
 *Aliases are stored as a list of strings. How will you check if the normalized input matches any alias in the list? Write your approach in pseudocode or plain English.*
 
 ```
-[your answer here]
+
 ```
 
 ---
@@ -92,6 +92,7 @@ likely match for clean user input. Aliases are the broadest net, so they go last
 **Test: does `"devil's ivy"` return the pothos entry?**
 ```
 [yes / no — if no, describe what happened]
+
 ```
 
 **Test: does `"SNAKE PLANT"` return the snake plant entry?**
