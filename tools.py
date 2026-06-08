@@ -23,11 +23,9 @@ _MONTH_TO_SEASON = {
 def lookup_plant(plant_name: str) -> dict:
     normalized = plant_name.strip().lower()
 
-    # 1. Direct key match — O(1) dict access, so check this first
     if normalized in _plant_db:
         return {"found": True, "plant": _plant_db[normalized]}
 
-    # 2. Display name, then 3. alias — these require scanning the values
     for plant in _plant_db.values():
         if normalized == plant.get("display_name", "").lower():
             return {"found": True, "plant": plant}
@@ -36,7 +34,6 @@ def lookup_plant(plant_name: str) -> dict:
         if normalized in aliases:
             return {"found": True, "plant": plant}
 
-    # Not found — hand the agent the full list so it can suggest a close match
     available = sorted(p["display_name"] for p in _plant_db.values())
     return {
         "found": False,

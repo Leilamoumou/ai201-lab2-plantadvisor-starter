@@ -70,7 +70,11 @@ likely match for clean user input. Aliases are the broadest net, so they go last
 *Aliases are stored as a list of strings. How will you check if the normalized input matches any alias in the list? Write your approach in pseudocode or plain English.*
 
 ```
-
+Each plant's aliases are stored as a list of strings, so  the whole list turned into lower case leads to a single
+comprehension — aliases = [a.lower() for a in plant.get("aliases", [])] — and
+then test membership with `normalized in aliases`. Using .get("aliases", []) means a
+plant with no aliases key just yields an empty list instead of raising KeyError, and
+lowercasing both sides keeps the match case-insensitive.
 ```
 
 ---
@@ -80,7 +84,9 @@ likely match for clean user input. Aliases are the broadest net, so they go last
 *When a plant isn't found, the agent will read your message and use it to decide what to tell the user. Write the exact string you'll return — make it useful to the agent, not just to a human reading logs.*
 
 ```
-[your answer here]
+No plant named '{plant_name}' was found in the database. The available plants are:
+{comma-separated list of display names}. Suggest the closest match or let the user
+know you only have care info for the listed plants.
 ```
 
 ---
@@ -91,18 +97,21 @@ likely match for clean user input. Aliases are the broadest net, so they go last
 
 **Test: does `"devil's ivy"` return the pothos entry?**
 ```
-[yes / no — if no, describe what happened]
-
+Yes, "devil's ivy".strip().lower() stays "devil's ivy" (apostrophe preserved), and
+the alias check lowercases each stored alias, so it matches pothos's "Devil's Ivy"
+alias. 
 ```
 
 **Test: does `"SNAKE PLANT"` return the snake plant entry?**
 ```
-[yes / no — if no, describe what happened]
+Yes, normalized becomes "snake plant", which matches either the dict key or the
+lowercased display_name. 
 ```
 
 **One edge case you discovered while implementing:**
 ```
-[your answer here]
+Empty or whitespace-only input: " ".strip().lower() becomes "", which won't match any key, display_name, or alias, which leads it to fall straight through to the not-found
+branch and returns the full available-plants list. The function never crashes on a blank query, and it just degrades to provide what it does have rather than adjusting.
 ```
 
 ---
