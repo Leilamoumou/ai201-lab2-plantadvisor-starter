@@ -21,32 +21,33 @@ _MONTH_TO_SEASON = {
 
 
 def lookup_plant(plant_name: str) -> dict:
-
     normalized = plant_name.strip().lower()
 
-    for key, plant in _plant_db.items():
-        if normalized == key:
-            return{"found": True, "plant": plant}
-        
-        if normalized == plant.get("display_name","").lower():
-            return{"found": True, "plant": plant}
-        
-        #alias matching 
+    # 1. Direct key match — O(1) dict access, so check this first
+    if normalized in _plant_db:
+        return {"found": True, "plant": _plant_db[normalized]}
+
+    # 2. Display name, then 3. alias — these require scanning the values
+    for plant in _plant_db.values():
+        if normalized == plant.get("display_name", "").lower():
+            return {"found": True, "plant": plant}
+
         aliases = [a.lower() for a in plant.get("aliases", [])]
         if normalized in aliases:
-            return{"found": True, "plant": plant}
+            return {"found": True, "plant": plant}
+
+    # Not found — hand the agent the full list so it can suggest a close match
     available = sorted(p["display_name"] for p in _plant_db.values())
     return {
         "found": False,
         "name": normalized,
-       "message": (
+        "message": (
             f"No plant named '{plant_name}' was found in the database. "
             f"The available plants are: {', '.join(available)}. "
-            "Suggest the closest match or let the user know only what you have "
+            "Suggest the closest match or let the user know you only have "
             "care info for the listed plants."
-       ),
+        ),
     }
-
 
 def get_seasonal_conditions(season: str | None = None) -> dict:
     """
